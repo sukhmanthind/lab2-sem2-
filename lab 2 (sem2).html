@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Breeds Information</title>
+    <style>
+    
+    body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            background-color: #4c90af;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input[type="text"] {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        label {
+            margin-right: 20px;
+            font-size: 16px;
+        }
+
+        .results-box {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #333;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .form-container h2 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+    <body>
+</head>
+<body>
+
+    <div class="form-container">
+        <button onclick="loadCatNames()">All Names</button>
+        <input type="text" placeholder="Health Issues" id="healthIssues">
+        <br><br>
+        
+        <input type="radio" id="imperial" name="unit" checked>
+        <label for="imperial">Imperial</label>
+        
+        <input type="radio" id="metric" name="unit">
+        <label for="metric">Metric</label>
+        
+        <button onclick="loadCatWeights()">Weight</button>
+        <br><br>
+        
+        <button onclick="loadIntelligenceAndFriendly()">Intelligence - Friendly</button>
+        <br><br>
+        
+        <button onclick="loadAverageIntelligence()">Average Intelligence</button>
+        <br><br>
+        
+        <button onclick="loadAverageIntelligenceForFriendly()">Average Intelligence for Child Friendly = 4</button>
+        <br><br>
+        
+        <div class="results-box" id="resultsBox">
+            All Results should be displayed here.
+        </div>
+    </div>
+
+    <script>
+        const jsonUrl = "https://api.thecatapi.com/v1/breeds";
+
+        
+        function loadCatNames() {
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    x.innerHTML = ""; 
+                    data.forEach(cat => {
+                        const name = document.createTextNode(cat.name);
+                        const lineBreak = document.createElement('br');
+                        x.appendChild(name);
+                        x.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching cat names:', error);
+                    document.getElementById('resultsBox').innerText = "Error loading cat names.";
+                });
+        }
+
+        
+        function loadHealthIssues() {
+    const healthIssue = document.getElementById('healthIssues').value.toLowerCase();
+    if (!healthIssue) {
+        document.getElementById('resultsBox').innerText = "Please enter a health issue.";
+        return;
+    }
+
+    fetch(jsonUrl)
+        .then(response => response.json())
+        .then(data => {
+            const x = document.getElementById('resultsBox');
+            x.innerHTML = ""; // Clear previous results
+            let found = false;
+
+            data.forEach(cat => {
+                if (cat.health_issues) {
+                    
+                    const issues = cat.health_issues.map(issue => issue.toLowerCase());
+                    if (issues.some(issue => issue.includes(healthIssue))) {
+                        const name = document.createTextNode(cat.name);
+                        const lineBreak = document.createElement('br');
+                        x.appendChild(name);
+                        x.appendChild(lineBreak);
+                        found = true;
+                    }
+                }
+            });
+
+            if (!found) {
+                x.innerText = "No cats found with the specified health issue.";
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching health issues:', error);
+            document.getElementById('resultsBox').innerText = "Error loading health issues.";
+        });
+}
+        
+        function loadCatWeights() {
+            const isMetric = document.getElementById('metric').checked;
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    x.innerHTML = ""; 
+                    data.forEach(cat => {
+                        const weight = isMetric ? cat.weight.metric : cat.weight.imperial;
+                        const text = `${cat.name}: ${weight}`;
+                        const textNode = document.createTextNode(text);
+                        const lineBreak = document.createElement('br');
+                        x.appendChild(textNode);
+                        x.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching weights:', error);
+                    document.getElementById('resultsBox').innerText = "Error loading weights.";
+                });
+        }
+
+        
+        function loadIntelligenceAndFriendly() {
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    x.innerHTML = ""; 
+                    data.forEach(cat => {
+                        const text = `${cat.name} - Intelligence: ${cat.intelligence}, Friendly: ${cat.child_friendly}`;
+                        const textNode = document.createTextNode(text);
+                        const lineBreak = document.createElement('br');
+                        x.appendChild(textNode);
+                        x.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching intelligence and friendly factors:', error);
+                    document.getElementById('resultsBox').innerText = "Error loading intelligence and friendliness.";
+                });
+        }
+
+        
+        function loadAverageIntelligence() {
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    let totalIntelligence = 0;
+                    data.forEach(cat => {
+                        totalIntelligence += cat.intelligence || 0;
+                    });
+                    const average = totalIntelligence / data.length;
+                    x.innerHTML = `Average Intelligence: ${average.toFixed(2)}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching average intelligence:', error);
+                    document.getElementById('resultsBox').innerText = "Error loading average intelligence.";
+                });
+        }
+
+        
+        function loadAverageIntelligenceForFriendly() {
+            fetch(jsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const x = document.getElementById('resultsBox');
+                    let totalIntelligence = 0;
+                    let count = 0;
+                    data.forEach(cat => {
+                        if (cat.child_friendly == 4) {
+                            totalIntelligence += cat.intelligence || 0;
+                            count++;
+                        }
+                    });
+                    const average = count > 0 ? totalIntelligence / count : 0;
+                    x.innerHTML = `Average Intelligence for Child Friendly Cats: ${average.toFixed(2)}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching average intelligence for child friendly:', error);
+                    document.getElementById('resultsBox').innerText = "Error loading average intelligence for child friendly cats.";
+                });
+        }
+    </script>
+
+</body>
+</html>
